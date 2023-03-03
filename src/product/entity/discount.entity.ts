@@ -13,7 +13,7 @@ export class Discount{
     @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
     id: number;
 
-    @Column('float', { name: 'price', precision: 12, default: 0})
+    @Column('float', { name: 'disPercent', precision: 12, default: 0})
     disPercent: number;
 
     @Column('varchar')

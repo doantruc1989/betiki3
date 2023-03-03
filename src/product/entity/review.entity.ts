@@ -3,10 +3,12 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Nestedreview } from './nestedreview.entity';
 import { Product } from './product.entity';
 
 @Entity('review')
@@ -17,6 +19,12 @@ export class Review {
   @Column('text')
   comment: string;
 
+  @Column('smallint', { name: 'stars', default: 5})
+    stars: number;
+
+    @Column('varchar', {name: 'type', default: "original"})
+  type: string;
+
   @Column({
     default: () => 'CURRENT_TIMESTAMP',
     type: 'datetime',
@@ -24,12 +32,14 @@ export class Review {
   })
   createdAt: Date;
 
-  @OneToOne(() => Product, (product) => product.review)
+  @ManyToOne(() => Product, (product) => product.review)
   product: Product;
 
-  @OneToOne(() => User, (user) => user.review)
-  @JoinColumn()
+  @ManyToOne(() => User, (user) => user.review)
   user: User;
+
+  @OneToMany( () => Nestedreview, ( nestedreview ) => nestedreview.review )
+  nestedreview: Nestedreview[];
 
   //   @OneToMany( () => Product, ( product ) => product.category )
   //   product: Product[];

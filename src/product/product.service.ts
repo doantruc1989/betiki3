@@ -8,6 +8,10 @@ import { Category } from './entity/category';
 import NewCategoryDto from './dto/newCategory.dto';
 import EditCategoryDto from './dto/editCategory.tdo';
 import SearchProductDto from './dto/searchProduct.dto';
+import { Review } from './entity/review.entity';
+import AddNestedReviewDto from './dto/addNestedReview.dto';
+import { Nestedreview } from './entity/nestedreview.entity';
+import AddReviewDto from './dto/addReview.dto';
 
 @Injectable()
 export class ProductService {
@@ -17,7 +21,24 @@ export class ProductService {
 
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+
+    @InjectRepository(Review)
+    private reviewRepository: Repository<Review>,
+
+    @InjectRepository(Nestedreview)
+    private nestedReviewRepository: Repository<Nestedreview>,
   ) {}
+
+  async getAllProduct(page:number) {
+    const product = await this.productRepository
+    .createQueryBuilder("product")
+    .leftJoinAndSelect("product.discount", "discount")
+    .leftJoinAndSelect('product.review', 'review')
+    .skip(16*(page -1))
+    .take(16)
+    .getMany()
+    return product;
+  }
 
   async createProduct(newProductDto: NewProductDto) {
    const product = await this.productRepository
@@ -30,15 +51,120 @@ export class ProductService {
     return product;
   }
 
+  async getProductByIdV2(id:number) {
+    const product = await this.productRepository
+    .createQueryBuilder("product")
+    .where({id:id})
+    .leftJoinAndSelect("product.categoryID", "category")
+    .leftJoinAndSelect("product.productvariant", "productvariant")
+    .leftJoinAndSelect("product.discount", "discount")
+    .leftJoinAndSelect('product.review', 'review')
+    .leftJoinAndSelect('review.user', 'user')
+    .leftJoinAndSelect('review.nestedreview', 'nestedreview')
+    .getMany()
+
+    return product
+  }
+
+   async patchProductById(id:number, editProductDto:EditProductDto) {
+    const product = await this.productRepository
+    .createQueryBuilder("product")
+    .where({id:id})
+    .update(editProductDto)
+    .execute()
+    return product;
+   }
+
+  async postGuestCommentById (id:number , addNestedReviewDto: AddNestedReviewDto) {
+    const comment = await this.nestedReviewRepository
+    .createQueryBuilder('nestedreview')
+    .leftJoinAndSelect('nestedreview.review', 'review')
+    .where({id:id})
+    .insert()
+    .into(Nestedreview)
+    .values(addNestedReviewDto)
+    .execute()
+    return comment
+  }
+
+  // async getCommentById (id:number) {
+  //   const comment = await this.reviewRepository
+  //   .createQueryBuilder('review')
+  //    .leftJoinAndSelect('review.product', 'product')
+  //   .leftJoinAndSelect('review.user', 'user')
+  //   .where({id:id})
+  //   .getMany()
+  //   return comment
+  // }
+
+  async countCommentbyId (id:number) {
+    const comment = await this.reviewRepository
+    .createQueryBuilder('review')
+    .leftJoinAndSelect('review.product', 'product')
+    .where({product: id})
+    .getCount()
+
+    const stars5 = await this.reviewRepository
+    .createQueryBuilder('review')
+    .leftJoinAndSelect('review.product', 'product')
+    .where({product: id})
+    .andWhere({stars : 5})
+    .getCount()
+
+    const stars4 = await this.reviewRepository
+    .createQueryBuilder('review')
+    .leftJoinAndSelect('review.product', 'product')
+    .where({product: id})
+    .andWhere({stars : 4})
+    .getCount()
+
+    const stars3 = await this.reviewRepository
+    .createQueryBuilder('review')
+    .leftJoinAndSelect('review.product', 'product')
+    .where({product: id})
+    .andWhere({stars : 3})
+    .getCount()
+
+    const stars2 = await this.reviewRepository
+    .createQueryBuilder('review')
+    .leftJoinAndSelect('review.product', 'product')
+    .where({product: id})
+    .andWhere({stars : 2})
+    .getCount()
+
+    const stars1 = await this.reviewRepository
+    .createQueryBuilder('review')
+    .leftJoinAndSelect('review.product', 'product')
+    .where({product: id})
+    .andWhere({stars : 1})
+    .getCount()
+    return [comment, stars5, stars4, stars3, stars2, stars1]
+  }
+
+  async postCommentById (addReviewDto: AddReviewDto) {
+    const comment = await this.reviewRepository
+    .createQueryBuilder('review')
+    .leftJoinAndSelect('review.product', 'product')
+    .leftJoinAndSelect('review.user', 'user')
+    .insert()
+    .into(Review)
+    .values(addReviewDto)
+    .execute()
+    return comment
+  }
+
   async listAllCategory() {
     return await this.categoryRepository.find();
   }
 
   async getProductbyCat(searchProductDto: SearchProductDto) {
-    const products = await this.productRepository.createQueryBuilder('product');
+    const products = await this.productRepository.createQueryBuilder('product')
+    .leftJoinAndSelect("product.discount", "discount")
+    .leftJoinAndSelect('product.review', 'review')
+    
 
-    if(searchProductDto.search === "searchall") {
-      return products
+    if(searchProductDto.search === "searchall") { 
+    const search =  await this.productRepository.createQueryBuilder('product')
       .where(`LOWER(productName) LIKE '%${searchProductDto.sortBy}%'`)
       .orWhere(`LOWER(id) LIKE '%${searchProductDto.sortBy}%'`)
       .orWhere(`LOWER(price) LIKE '%${searchProductDto.sortBy}%'`)
@@ -46,6 +172,7 @@ export class ProductService {
       .orWhere(`LOWER(category) LIKE '%${searchProductDto.sortBy}%'`)
       .take(10)
       .getMany()
+      return search
     }
 
     // if(searchProductDto.search === "searchadmin") {

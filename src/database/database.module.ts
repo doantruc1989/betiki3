@@ -13,6 +13,7 @@ import { OrderItem } from 'src/cart/entity/OrderItem';
 import { Discount } from 'src/product/entity/discount.entity';
 import { Review } from 'src/product/entity/review.entity';
 import { ProductVariant } from 'src/product/entity/productVariant.entity';
+import { Nestedreview } from 'src/product/entity/nestedreview.entity';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { ProductVariant } from 'src/product/entity/productVariant.entity';
         username: "root",
         password: '',
         database: "db3",
-        entities: [User, OrderItem, Review, Discount, Product, ProductVariant, Category, Province,  Hero, Bosuutap, Thuonghieuchinhhang,Thuonghieusaletet],
+        entities: [User, OrderItem, Review, Nestedreview, Discount, Product, ProductVariant, Category, Province,  Hero, Bosuutap, Thuonghieuchinhhang,Thuonghieusaletet],
         synchronize: true,
       }),
     }),

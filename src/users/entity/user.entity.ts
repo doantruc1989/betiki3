@@ -1,8 +1,9 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { SharedProp } from './sharedProp.helper';
 import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 import { Review } from 'src/product/entity/review.entity';
+import { Nestedreview } from 'src/product/entity/nestedreview.entity';
 
 export enum Role {
   User = 'user',
@@ -58,6 +59,7 @@ export class User {
   })
   createdAt: Date;
 
-  @OneToOne(() => Review, (review) => review.user)
-  review: Review
+  @OneToMany(() => Review, (review) => review.user)
+  review: Review[]
+
 }

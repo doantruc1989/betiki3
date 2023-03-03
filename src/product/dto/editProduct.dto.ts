@@ -6,7 +6,9 @@ export class EditProductDto {
     category: string;
     quantity: number;
     image: string;
-    content: string
+    content: string;
+    stars: string;
+    sold: number;
 }
 
 export default EditProductDto;

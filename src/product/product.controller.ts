@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -12,6 +13,8 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import AddNestedReviewDto from './dto/addNestedReview.dto';
+import AddReviewDto from './dto/addReview.dto';
 import EditCategoryDto from './dto/editCategory.tdo';
 import EditProductDto from './dto/editProduct.dto';
 import NewCategoryDto from './dto/newCategory.dto';
@@ -27,6 +30,41 @@ export class ProductController {
   @Get('product')
   async getAllProduct(@Query('page') page: number) {
     return this.productService.listProduct(page);
+  }
+
+  @Get('v2/product/:id')
+  async getProductId(@Param('id') id: number) {
+    return this.productService.getProductByIdV2(id);
+  }
+
+  @Post('v2/product/comment/')
+  async postComment(@Body() addReviewDto :AddReviewDto) {
+    return this.productService.postCommentById(addReviewDto)
+  }
+
+  // @Get('v2/product/comment/:id')
+  // async getComment(@Param('id') id: number) {
+  //   return this.productService.getCommentById(id)
+  // }
+
+  @Post('v2/product/guestcomment/:id')
+  async postGuestComment(@Param('id') id: number, @Body() addNestedReviewDto :AddNestedReviewDto) {
+    return this.productService.postGuestCommentById(id, addNestedReviewDto);
+  }
+
+  @Get('v2/product/comment/:id')
+  async countComment(@Param('id') id: number) {
+    return this.productService.countCommentbyId(id)
+  }
+
+  @Get('v2/product/')
+  async getProductV2(@Query('page') page: number) {
+    return this.productService.getAllProduct(page)
+  }
+
+  @Patch('v2/product/:id')
+  async patchProductv2(@Param('id') id: number, @Body() editProductDto:EditProductDto) {
+    return this.productService.patchProductById(id, editProductDto)
   }
 
   @Get('product/all')

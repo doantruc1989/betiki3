@@ -1,13 +1,13 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Product } from './product.entity';
 
-@Entity('productVariant')
+@Entity('productvariant')
 export class ProductVariant {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
   id: number;
 
-  @Column('smallint', { name: 'quantity', default: 0 })
-  typeQty: number;
+  @Column('int', { name: 'typePrice', default: 0 })
+  typePrice: number;
 
   @Column('varchar')
   type: string;
@@ -19,6 +19,6 @@ export class ProductVariant {
   })
   createdAt: Date;
 
-  @ManyToOne(() => Product, (product) => product.productVariant)
+  @ManyToOne(() => Product, (product) => product.productvariant)
   product: Product;
 }

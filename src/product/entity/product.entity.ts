@@ -45,6 +45,12 @@ export class Product{
     @Column('smallint', { name: 'quantity', default: 0})
     quantity: number;
 
+    @Column('smallint', { name: 'sold', default: 99})
+    sold: number;
+
+    @Column('varchar', { name: 'stars', default: '5'})
+    stars: string;
+
     @Column('varchar')
     image: string;
 
@@ -53,9 +59,6 @@ export class Product{
 
     @Column('varchar')
     brand: string;
-
-    @Column('varchar')
-    path: string;
 
     @Column('text', { name: 'content', nullable: true })
     content: string | null;
@@ -73,12 +76,11 @@ export class Product{
     @ManyToOne(() => Discount, (discount) => discount.product)
     discount: Discount
 
-    @OneToOne(() => Review, (review) => review.product)
-    @JoinColumn()
-    review: Review
+    @OneToMany(() => Review, (review) => review.product)
+    review: Review[]
 
-    @OneToMany( () => ProductVariant, ( productVariant ) => productVariant.product )
-    productVariant: ProductVariant[];
+    @OneToMany( () => ProductVariant, ( productvariant ) => productvariant.product )
+    productvariant: ProductVariant[];
 
     // @OneToMany( () => CartItem, ( cartItem ) => cartItem.product )
     // cartItems: CartItem[];

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from 'src/product/entity/product.entity';
+import { ProductVariant } from 'src/product/entity/productVariant.entity';
 import { Repository } from 'typeorm';
 import SaveOrderdto from './dto/saveOrder.dto';
 import { SearchCartDto } from './dto/searchCart.dto';
@@ -13,21 +14,26 @@ export class CartService {
     private orderItemRepository: Repository<OrderItem>,
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
+    @InjectRepository(ProductVariant)
+    private productVariantRepository: Repository<ProductVariant>,
   ) {}
 
   async saveOrder(saveOrderdto: SaveOrderdto) {
     const item = JSON.parse(saveOrderdto.orderItems);
     let revenue: number;
     let totalRevenue: number = 0;
+
     for (let i = 0; i < item.length; i++) {
-      const productId = item[i].id;
+      const productId = ((item[i].id).split('.'))[0];
       const qty = item[i].quantity;
-      const product = await this.productRepository.findOneBy({ id: productId });
+      const product = await this.productRepository.findOneBy({
+        id: productId
+      });
       product.quantity = product.quantity - qty;
       await this.productRepository.save(product);
-      revenue = (product.price - product.initialPrice) * qty;
+      revenue = (item[i].price - product.initialPrice) * qty;
       totalRevenue += revenue;
-      saveOrderdto.revenue = totalRevenue;
+      saveOrderdto.revenue = totalRevenue + saveOrderdto.fee;
       await this.orderItemRepository.save(saveOrderdto);
     }
   }
@@ -54,31 +60,36 @@ export class CartService {
   }
 
   async querySearchOrder(searchCartDto: SearchCartDto) {
-    const order = await this.orderItemRepository.createQueryBuilder('OrderItem');
+    const order = await this.orderItemRepository.createQueryBuilder(
+      'OrderItem',
+    );
     if (searchCartDto.search === 'adminasc') {
-      return order.orderBy(`OrderItem.${searchCartDto.sortBy}`, 'ASC').getMany();
+      return order
+        .orderBy(`OrderItem.${searchCartDto.sortBy}`, 'ASC')
+        .getMany();
     }
 
     if (searchCartDto.search === 'admindesc') {
-      return order.orderBy(`OrderItem.${searchCartDto.sortBy}`, 'DESC').getMany();
+      return order
+        .orderBy(`OrderItem.${searchCartDto.sortBy}`, 'DESC')
+        .getMany();
     }
 
-    if(searchCartDto.search === "searchall") {
-        return order
+    if (searchCartDto.search === 'searchall') {
+      return order
         .where(`LOWER(userId) LIKE '%${searchCartDto.sortBy}%'`)
         .orWhere(`LOWER(id) LIKE '%${searchCartDto.sortBy}%'`)
         .orWhere(`LOWER(status) LIKE '%${searchCartDto.sortBy}%'`)
         .take(10)
-        .getMany()
-      }
+        .getMany();
+    }
     return order.getMany();
   }
 
   async updateOrderByid(id: number, saveOrderdto: SaveOrderdto) {
-    console.log(saveOrderdto, id);
     const order = await this.orderItemRepository.findOneBy({ id: id });
     order.status = saveOrderdto.status || order.status;
-    order.isPaid = saveOrderdto.isPaid;
+    order.isPaid = saveOrderdto.isPaid ||  order.isPaid;
     return this.orderItemRepository.update(id, order);
   }
 
@@ -102,7 +113,7 @@ export class CartService {
         `createdAt BETWEEN '${start.toISOString()}' AND '${end.toISOString()}'`,
       )
       .getCount();
-    return {countAllOrder, ordersToday};
+    return { countAllOrder, ordersToday };
   }
 
   async adminGetDay() {
@@ -123,17 +134,17 @@ export class CartService {
     }
 
     const revenue = await this.orderItemRepository
-    .createQueryBuilder('order')
-    .where(
-      `createdAt BETWEEN '${start.toISOString()}' AND '${end.toISOString()}'`,
-    )
-    .getMany();
-  let revenues = 0;
-  for (let i = 0; i < revenue.length; i++) {
-    revenues += revenue[i].revenue;
-  }
+      .createQueryBuilder('order')
+      .where(
+        `createdAt BETWEEN '${start.toISOString()}' AND '${end.toISOString()}'`,
+      )
+      .getMany();
+    let revenues = 0;
+    for (let i = 0; i < revenue.length; i++) {
+      revenues += revenue[i].revenue;
+    }
 
-    return {sales, revenues};
+    return { sales, revenues };
   }
 
   async adminGetWeek() {
@@ -163,9 +174,9 @@ export class CartService {
     for (let i = 0; i < revenue.length; i++) {
       revenues += revenue[i].revenue;
     }
-    return {sales, revenues};
+    return { sales, revenues };
   }
-  
+
   async adminGetMonth() {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -193,31 +204,32 @@ export class CartService {
     for (let i = 0; i < revenue.length; i++) {
       revenues += revenue[i].revenue;
     }
-    return {sales, revenues};
+    return { sales, revenues };
   }
 
-//   adminTotalOrder = async (field: number) => {
-//     const start = new Date();
-//     start.setHours(0, 0, 0, 0);
-//     const end = new Date(start);
-//     end.setDate(start.getDate() + 1);
-//     const lastMonth = new Date(start);
-//     lastMonth.setDate(start.getDate() - field);
-//     const order = await this.orderItemRepository
-//       .createQueryBuilder('order')
-//       .select('COUNT(order.id)')
-//       .where(
-//         `createdAt BETWEEN '${lastMonth.toISOString()}' AND '${end.toISOString()}'`,
-//       )
-//       .getCount();
-//     return order;
-//   };
+  //   adminTotalOrder = async (field: number) => {
+  //     const start = new Date();
+  //     start.setHours(0, 0, 0, 0);
+  //     const end = new Date(start);
+  //     end.setDate(start.getDate() + 1);
+  //     const lastMonth = new Date(start);
+  //     lastMonth.setDate(start.getDate() - field);
+  //     const order = await this.orderItemRepository
+  //       .createQueryBuilder('order')
+  //       .select('COUNT(order.id)')
+  //       .where(
+  //         `createdAt BETWEEN '${lastMonth.toISOString()}' AND '${end.toISOString()}'`,
+  //       )
+  //       .getCount();
+  //     return order;
+  //   };
 
-  async checkStatusOrder () {
-    const order = await this.orderItemRepository.createQueryBuilder('order')
-    .where({status : 0})
-    .take(5)
-    .getMany()
-    return order
+  async checkStatusOrder() {
+    const order = await this.orderItemRepository
+      .createQueryBuilder('order')
+      .where({ status: 0 })
+      .take(5)
+      .getMany();
+    return order;
   }
 }

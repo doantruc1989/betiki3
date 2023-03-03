@@ -12,6 +12,7 @@ export class SaveOrderdto {
     payment: string;
     trans:string;
     isPaid:boolean;
+    fee:number;
 }
 
 export default SaveOrderdto;
