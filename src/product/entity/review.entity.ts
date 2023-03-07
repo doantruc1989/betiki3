@@ -1,6 +1,7 @@
 import { User } from 'src/users/entity/user.entity';
 import {
   Column,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -32,14 +33,21 @@ export class Review {
   })
   createdAt: Date;
 
-  @ManyToOne(() => Product, (product) => product.review)
+  @ManyToOne(() => Product, (product) => product.review,{
+    onDelete: 'CASCADE'
+  })
   product: Product;
 
-  @ManyToOne(() => User, (user) => user.review)
+  @ManyToOne(() => User, (user) => user.review,{
+    onDelete: 'CASCADE'
+  })
   user: User;
 
-  @OneToMany( () => Nestedreview, ( nestedreview ) => nestedreview.review )
+  @OneToMany( () => Nestedreview, ( nestedreview ) => nestedreview.review)
   nestedreview: Nestedreview[];
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 
   //   @OneToMany( () => Product, ( product ) => product.category )
   //   product: Product[];

@@ -15,7 +15,7 @@ import { CartModule } from './cart/cart.module';
         MYSQL_HOST: "localhost",
         MYSQL_PORT: 3306,
         MYSQL_USER: "root",
-        MYSQL_DB: "db5",
+        MYSQL_DB: "db3",
         JWT_ACCESS_TOKEN_SECRET: "mycat",
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: "1d",
         JWT_REFRESH_TOKEN_SECRET: "mycat2",

@@ -5,6 +5,7 @@ export class AddReviewDto {
     stars: number;
     userId: number;
     productId:number;
+    type?:string;
 }
 
 export default AddReviewDto;

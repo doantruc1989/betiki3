@@ -70,16 +70,20 @@ export class Product{
 	  })
 	  createdAt: Date;
 
-    @ManyToOne(() => Category, (category) => category.productId)
+    @ManyToOne(() => Category, (category) => category.productId,{
+      onDelete: 'CASCADE'
+    })
     categoryID: Category
 
-    @ManyToOne(() => Discount, (discount) => discount.product)
+    @ManyToOne(() => Discount, (discount) => discount.product,{
+      onDelete: 'CASCADE'
+    })
     discount: Discount
 
-    @OneToMany(() => Review, (review) => review.product)
+    @OneToMany(() => Review, (review) => review.product,)
     review: Review[]
 
-    @OneToMany( () => ProductVariant, ( productvariant ) => productvariant.product )
+    @OneToMany( () => ProductVariant, ( productvariant ) => productvariant.product)
     productvariant: ProductVariant[];
 
     // @OneToMany( () => CartItem, ( cartItem ) => cartItem.product )

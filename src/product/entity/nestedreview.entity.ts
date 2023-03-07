@@ -1,6 +1,7 @@
 import { User } from 'src/users/entity/user.entity';
 import {
   Column,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -25,6 +26,12 @@ export class Nestedreview {
   })
   createdAt: Date;
 
-  @ManyToOne(() => Review, (review) => review.nestedreview)
+  @DeleteDateColumn()
+  deletedAt?: Date;
+
+  @ManyToOne(() => Review, (review) => review.nestedreview,{nullable: true, 
+    onDelete: 'CASCADE',
+  })
   review: Review
+
 }

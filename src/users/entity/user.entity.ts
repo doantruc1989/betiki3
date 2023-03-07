@@ -59,7 +59,9 @@ export class User {
   })
   createdAt: Date;
 
-  @OneToMany(() => Review, (review) => review.user)
+  @OneToMany(() => Review, (review) => review.user,{
+    onDelete: 'SET NULL'
+  })
   review: Review[]
 
 }
